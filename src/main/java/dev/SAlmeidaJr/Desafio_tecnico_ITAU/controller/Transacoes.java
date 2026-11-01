@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoDto;
+import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoRequestDto;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.services.TransacaoService;
 
 @RestController
@@ -22,7 +22,7 @@ public class Transacoes {
 
     //POST(transacao)
     @PostMapping("transacao")
-    ResponseEntity<Void> transacao(@RequestBody TransacaoDto body){
+    ResponseEntity<Void> transacao(@RequestBody TransacaoRequestDto body){
         return transacaoService.create(body);
     }
 

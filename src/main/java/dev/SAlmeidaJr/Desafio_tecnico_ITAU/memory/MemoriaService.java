@@ -3,7 +3,10 @@ package dev.SAlmeidaJr.Desafio_tecnico_ITAU.memory;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
@@ -21,7 +24,11 @@ public class MemoriaService {
         return armazenamento.get(key);
     }
 
-    public Collection<BigDecimal> listAll(){
-        return armazenamento.values();
+    public Set<Entry<OffsetDateTime, BigDecimal>> listAll(){
+        return Collections.unmodifiableSet(armazenamento.entrySet());
+    }
+
+    public void clear(){
+        armazenamento.clear();
     }
 }
