@@ -1,12 +1,15 @@
 package dev.SAlmeidaJr.Desafio_tecnico_ITAU.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoEstatisticaResponse;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoRequestDto;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.exceptions.UnprocessableEntity;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.memory.MemoriaService;
@@ -45,26 +48,53 @@ public class TransacaoService {
     }
 
 
-    public void estatiscaTransacao(){
-        var dataHoraIntervalo = OffsetDateTime.now().minusSeconds(60);
+    public TransacaoEstatisticaResponse estatiscaTransacao(int valorIntervalo){
+        var dataHoraIntervalo = OffsetDateTime.now().minusSeconds(valorIntervalo);
         var intervalo = armazenamento.listAll()
             .stream()
             .filter( n -> n.getKey().isAfter(dataHoraIntervalo))
-            .sorted(Map.Entry.comparingByKey())
+            .map(Map.Entry::getValue)
             .toList();
 
+        if(intervalo.isEmpty()){
+            return new TransacaoEstatisticaResponse(
+                0,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO);
+        }
+
         var quantidadeTransacao = intervalo.size();
-        var somaMaximaTransacao = intervalo.stream().map(Map.Entry::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
-        var mediaTransacao = somaMaximaTransacao.divide(BigDecimal.valueOf(quantidadeTransacao));
+        var somaTotalTransacao = intervalo
+            .stream()
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        var valores = intervalo.stream().map(Map.Entry::getValue).toList();
+        var mediaTransacao = somaTotalTransacao.divide(
+            BigDecimal.valueOf(quantidadeTransacao),
+            2,
+            RoundingMode.HALF_UP);
 
-        // var maiorTransacao = ;
-        // var menorTransacao = ;
+        var menorTransacao = Collections.min(intervalo);
+        var maiorTransacao = Collections.max(intervalo);
+
+
+        return new TransacaoEstatisticaResponse(
+            quantidadeTransacao,
+            somaTotalTransacao,
+            mediaTransacao,
+            menorTransacao,
+            maiorTransacao);
+    }
+
+    public TransacaoEstatisticaResponse estatiscaTransacao(){
+        return estatiscaTransacao(60);
     }
 
 
     public void deletarTransacao(){
         armazenamento.clear();
     }
+
+
 }

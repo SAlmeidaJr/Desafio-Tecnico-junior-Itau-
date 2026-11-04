@@ -23,7 +23,7 @@ public class Transacoes {
     //POST(transacao)
     @PostMapping("transacao")
     ResponseEntity<Void> transacao(@RequestBody TransacaoRequestDto body){
-        return transacaoService.create(body);
+        return transacaoService.adicionar(body);
     }
 
 
