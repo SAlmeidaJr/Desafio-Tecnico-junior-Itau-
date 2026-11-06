@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoEstatisticaResponse;
+import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.EstatisticaResponse;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.dto.TransacaoRequestDto;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.exceptions.UnprocessableEntity;
 import dev.SAlmeidaJr.Desafio_tecnico_ITAU.memory.MemoriaService;
@@ -22,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 public class TransacaoService {
 
     private final MemoriaService armazenamento;
-
 
     public ResponseEntity<Void> adicionar(TransacaoRequestDto body){
 
@@ -48,53 +48,18 @@ public class TransacaoService {
     }
 
 
-    public TransacaoEstatisticaResponse estatiscaTransacao(int valorIntervalo){
+    public List<BigDecimal> buscarTransacao(int valorIntervalo){
         var dataHoraIntervalo = OffsetDateTime.now().minusSeconds(valorIntervalo);
-        var intervalo = armazenamento.listAll()
+        return armazenamento.listAll()
             .stream()
             .filter( n -> n.getKey().isAfter(dataHoraIntervalo))
             .map(Map.Entry::getValue)
             .toList();
-
-        if(intervalo.isEmpty()){
-            return new TransacaoEstatisticaResponse(
-                0,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO);
-        }
-
-        var quantidadeTransacao = intervalo.size();
-        var somaTotalTransacao = intervalo
-            .stream()
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        var mediaTransacao = somaTotalTransacao.divide(
-            BigDecimal.valueOf(quantidadeTransacao),
-            2,
-            RoundingMode.HALF_UP);
-
-        var menorTransacao = Collections.min(intervalo);
-        var maiorTransacao = Collections.max(intervalo);
-
-
-        return new TransacaoEstatisticaResponse(
-            quantidadeTransacao,
-            somaTotalTransacao,
-            mediaTransacao,
-            menorTransacao,
-            maiorTransacao);
-    }
-
-    public TransacaoEstatisticaResponse estatiscaTransacao(){
-        return estatiscaTransacao(60);
     }
 
 
     public void deletarTransacao(){
         armazenamento.clear();
     }
-
 
 }
